@@ -5,6 +5,8 @@ const PORT = 3000;
 const app = express();
 app.disable('x-powered-by');
 
+app.use(express.json())
+
 const tasks = [
     { id: 1, title: "Read a bible", done: true },
     { id: 2, title: "Build an app", done: true },
@@ -25,10 +27,12 @@ app.get("/health", (req, res) => {
     res.status(200).json({"status": "ok"})
 });
 
+// Get all tasks
 app.get("/tasks", (req, res) => {
     res.status(200).json(tasks);
 });
 
+// Update a task
 app.get("/tasks/:id", (req, res) => {
     const id = req.params.id;
     const task = tasks.find(t => t.id === Number.parseInt(id));
@@ -37,6 +41,25 @@ app.get("/tasks/:id", (req, res) => {
         return;
     }
     res.status(200).json(task);
+});
+
+// Create a new task
+app.post('/tasks', (req, res) => {
+  const { title } = req.body;
+
+  // Validation
+  if (!title || title.trim() === '') {
+    return res.status(400).json({ error: 'Title is required' });
+  }
+
+  const newTask = {
+    id: tasks.length ? tasks[tasks.length - 1].id + 1 : 1,
+    title,
+    done: false,
+  };
+
+  tasks.push(newTask);
+  res.status(201).json(newTask);
 });
 
 app.listen(PORT, () => {
