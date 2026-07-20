@@ -1,4 +1,4 @@
-# flyrank-ai Task API self-version
+# Task API. Self-Version
 
 A simple **Node.js + Express (ESM)** CRUD API for managing tasks, complete with **Swagger UI** documentation.
 
