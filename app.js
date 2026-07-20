@@ -1,9 +1,15 @@
 import express from 'express';
+import swaggerUi from 'swagger-ui-express';
+import fs from 'fs';
 
 const PORT = 3000;
 
 const app = express();
 app.disable('x-powered-by');
+
+// Serve Swagger UI
+const swaggerDocument = JSON.parse(fs.readFileSync('./swagger.json', 'utf8'));
+app.use('/docs', swaggerUi.serve, swaggerUi.setup(swaggerDocument));
 
 app.use(express.json())
 
@@ -99,4 +105,5 @@ app.delete('/tasks/:id', (req, res) => {
 // start the server
 app.listen(PORT, () => {
     console.log(`Server is running on port ${PORT}`);
+    console.log(`Swagger UI available at http://localhost:${PORT}/docs`);
 });

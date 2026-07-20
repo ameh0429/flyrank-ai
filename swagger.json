@@ -1,0 +1,137 @@
+{
+  "openapi": "3.0.0",
+  "info": {
+    "title": "Task API",
+    "version": "1.0.0",
+    "description": "A simple CRUD API for tasks"
+  },
+  "paths": {
+    "/tasks": {
+      "get": {
+    "summary": "List all tasks",
+    "responses": {
+      "200": {
+        "description": "Successful response",
+        "content": {
+          "application/json": {
+            "schema": {
+              "type": "array",
+              "items": {
+                "type": "object",
+                "properties": {
+                  "id": { "type": "integer" },
+                  "title": { "type": "string" },
+                  "done": { "type": "boolean" }
+                }
+              }
+            }
+          }
+        }
+      }
+    }
+  },
+  "post": {
+    "summary": "Create a new task",
+    "requestBody": {
+      "required": true,
+      "content": {
+        "application/json": {
+          "schema": {
+            "type": "object",
+            "properties": {
+              "title": { "type": "string" }
+            },
+            "required": ["title"]
+          }
+        }
+      }
+    },
+    "responses": {
+      "201": {
+        "description": "Task created successfully",
+        "content": {
+          "application/json": {
+            "schema": {
+              "type": "object",
+              "properties": {
+                "id": { "type": "integer" },
+                "title": { "type": "string" },
+                "done": { "type": "boolean" }
+              }
+            }
+          }
+        }
+      },
+      "400": {
+        "description": "Invalid input"
+      }
+    }
+  }
+},
+
+    "/tasks/{id}": {
+  "parameters": [
+    {
+      "name": "id",
+      "in": "path",
+      "required": true,
+      "schema": {
+        "type": "integer"
+      },
+      "description": "ID of the task"
+    }
+  ],
+  "get": {
+    "summary": "Get a single task",
+    "responses": {
+      "200": {
+        "description": "Task found",
+        "content": {
+          "application/json": {
+            "schema": {
+              "type": "object",
+              "properties": {
+                "id": { "type": "integer" },
+                "title": { "type": "string" },
+                "done": { "type": "boolean" }
+              }
+            }
+          }
+        }
+      },
+      "404": { "description": "Task not found" }
+    }
+  },
+  "put": {
+    "summary": "Update a task",
+    "requestBody": {
+      "required": true,
+      "content": {
+        "application/json": {
+          "schema": {
+            "type": "object",
+            "properties": {
+              "title": { "type": "string" },
+              "done": { "type": "boolean" }
+            }
+          }
+        }
+      }
+    },
+    "responses": {
+      "200": { "description": "Task updated successfully" },
+      "400": { "description": "Invalid input" },
+      "404": { "description": "Task not found" }
+    }
+  },
+  "delete": {
+    "summary": "Delete a task",
+    "responses": {
+      "204": { "description": "Task deleted successfully" },
+      "404": { "description": "Task not found" }
+    }
+  }
+}
+
+  }
+}
