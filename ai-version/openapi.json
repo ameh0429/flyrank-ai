@@ -1,0 +1,248 @@
+{
+  "openapi": "3.0.3",
+  "info": {
+    "title": "Task API",
+    "version": "1.0.0",
+    "description": "A simple in-memory CRUD API for managing tasks."
+  },
+  "servers": [
+    { "url": "http://localhost:3001" }
+  ],
+  "tags": [
+    { "name": "Tasks", "description": "Task management endpoints" },
+    { "name": "Meta", "description": "Root and health check endpoints" }
+  ],
+  "paths": {
+    "/": {
+      "get": {
+        "tags": ["Meta"],
+        "summary": "API info",
+        "responses": {
+          "200": {
+            "description": "Basic API metadata",
+            "content": {
+              "application/json": {
+                "schema": { "$ref": "#/components/schemas/RootInfo" }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/health": {
+      "get": {
+        "tags": ["Meta"],
+        "summary": "Health check",
+        "responses": {
+          "200": {
+            "description": "Service is healthy",
+            "content": {
+              "application/json": {
+                "schema": { "$ref": "#/components/schemas/Health" }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/tasks": {
+      "get": {
+        "tags": ["Tasks"],
+        "summary": "List all tasks",
+        "responses": {
+          "200": {
+            "description": "Array of tasks",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "array",
+                  "items": { "$ref": "#/components/schemas/Task" }
+                }
+              }
+            }
+          }
+        }
+      },
+      "post": {
+        "tags": ["Tasks"],
+        "summary": "Create a new task",
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": { "$ref": "#/components/schemas/TaskCreateInput" },
+              "example": { "title": "Buy milk" }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": "Task created",
+            "content": {
+              "application/json": {
+                "schema": { "$ref": "#/components/schemas/Task" }
+              }
+            }
+          },
+          "400": {
+            "description": "Missing or invalid title",
+            "content": {
+              "application/json": {
+                "schema": { "$ref": "#/components/schemas/Error" }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/tasks/{id}": {
+      "get": {
+        "tags": ["Tasks"],
+        "summary": "Get a single task by id",
+        "parameters": [
+          { "$ref": "#/components/parameters/TaskId" }
+        ],
+        "responses": {
+          "200": {
+            "description": "The requested task",
+            "content": {
+              "application/json": {
+                "schema": { "$ref": "#/components/schemas/Task" }
+              }
+            }
+          },
+          "404": {
+            "description": "Task not found",
+            "content": {
+              "application/json": {
+                "schema": { "$ref": "#/components/schemas/Error" }
+              }
+            }
+          }
+        }
+      },
+      "put": {
+        "tags": ["Tasks"],
+        "summary": "Update a task's title and/or done status",
+        "parameters": [
+          { "$ref": "#/components/parameters/TaskId" }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": { "$ref": "#/components/schemas/TaskUpdateInput" },
+              "example": { "title": "Buy oat milk", "done": true }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Updated task",
+            "content": {
+              "application/json": {
+                "schema": { "$ref": "#/components/schemas/Task" }
+              }
+            }
+          },
+          "400": {
+            "description": "Invalid body",
+            "content": {
+              "application/json": {
+                "schema": { "$ref": "#/components/schemas/Error" }
+              }
+            }
+          },
+          "404": {
+            "description": "Task not found",
+            "content": {
+              "application/json": {
+                "schema": { "$ref": "#/components/schemas/Error" }
+              }
+            }
+          }
+        }
+      },
+      "delete": {
+        "tags": ["Tasks"],
+        "summary": "Delete a task",
+        "parameters": [
+          { "$ref": "#/components/parameters/TaskId" }
+        ],
+        "responses": {
+          "204": {
+            "description": "Task deleted, no content returned"
+          },
+          "404": {
+            "description": "Task not found",
+            "content": {
+              "application/json": {
+                "schema": { "$ref": "#/components/schemas/Error" }
+              }
+            }
+          }
+        }
+      }
+    }
+  },
+  "components": {
+    "parameters": {
+      "TaskId": {
+        "name": "id",
+        "in": "path",
+        "required": true,
+        "schema": { "type": "integer" },
+        "description": "The numeric id of the task"
+      }
+    },
+    "schemas": {
+      "Task": {
+        "type": "object",
+        "properties": {
+          "id": { "type": "integer", "example": 1 },
+          "title": { "type": "string", "example": "Buy milk" },
+          "done": { "type": "boolean", "example": false }
+        },
+        "required": ["id", "title", "done"]
+      },
+      "TaskCreateInput": {
+        "type": "object",
+        "properties": {
+          "title": { "type": "string", "example": "Buy milk" }
+        },
+        "required": ["title"]
+      },
+      "TaskUpdateInput": {
+        "type": "object",
+        "properties": {
+          "title": { "type": "string", "example": "Buy oat milk" },
+          "done": { "type": "boolean", "example": true }
+        }
+      },
+      "RootInfo": {
+        "type": "object",
+        "properties": {
+          "name": { "type": "string", "example": "Task API" },
+          "version": { "type": "string", "example": "1.0" },
+          "endpoints": {
+            "type": "array",
+            "items": { "type": "string" },
+            "example": ["/tasks"]
+          }
+        }
+      },
+      "Health": {
+        "type": "object",
+        "properties": {
+          "status": { "type": "string", "example": "ok" }
+        }
+      },
+      "Error": {
+        "type": "object",
+        "properties": {
+          "error": { "type": "string", "example": "Task not found" }
+        }
+      }
+    }
+  }
+}

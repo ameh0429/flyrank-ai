@@ -1,0 +1,14 @@
+{
+  "name": "ai-version",
+  "version": "1.0.0",
+  "description": "A simple in-memory Task CRUD API built with Node.js and Express (ESM), with Swagger UI docs.",
+  "type": "module",
+  "main": "index.js",
+  "scripts": {
+    "dev": "node index.js"
+  },
+  "dependencies": {
+    "express": "^4.19.2",
+    "swagger-ui-express": "^5.0.1"
+  }
+}

@@ -1,4 +1,4 @@
-# flyrank-ai Task API
+# flyrank-ai Task API self-version
 
 A simple **Node.js + Express (ESM)** CRUD API for managing tasks, complete with **Swagger UI** documentation.
 
@@ -55,4 +55,10 @@ Content-Length: 123
 - Uses Express ESM syntax ("type": "module" in package.json).
 - In-memory task list (no database).
 - Fully documented with OpenAPI 3.0 spec served via swagger-ui-express.
+
+## Comparing AI Code with My Code
+
+- What did the AI do better — and do you understand its version well enough to explain it? The AI generated the code with better error handling with a detailed documentation. 
+- What did it get wrong or quietly ignore from your prompt? - The AI did not ignore anything or got anything wrong from my prompt.
+- What did your prompt forget to specify — My prompt did not forget any details. I described the complete details of the project in my prompt.
 
