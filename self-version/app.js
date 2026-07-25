@@ -59,23 +59,19 @@ app.get("/tasks/:id", async (req, res) => {
 });
 
 // // Create a new task
-// app.post('/tasks', (req, res) => {
-//   const { title } = req.body;
+app.post('/tasks', async (req, res) => {
+  const { title } = req.body;
+  if (!title || title.trim() === '') {
+    return res.status(400).json({ error: 'Title is required' });
+  }
 
-//   // Validation
-//   if (!title || title.trim() === '') {
-//     return res.status(400).json({ error: 'Title is required' });
-//   }
-
-//   const newTask = {
-//     id: tasks.length ? tasks[tasks.length - 1].id + 1 : 1,
-//     title,
-//     done: false,
-//   };
-
-//   tasks.push(newTask);
-//   res.status(201).json(newTask);
-// });
+  try {
+    const newTask = await Task.create({ title, done: false });
+    res.status(201).json(newTask);
+  } catch (err) {
+    res.status(500).json({ error: 'Database error' });
+  }
+});
 
 // //  Update a task
 // app.put('/tasks/:id', (req, res) => {
