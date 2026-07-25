@@ -1,18 +1,18 @@
-import express from 'express';
-import swaggerUi from 'swagger-ui-express';
-import fs from 'node:fs';
-import { Task } from './db.js';
+import express from "express";
+import swaggerUi from "swagger-ui-express";
+import fs from "node:fs";
+import { Task } from "./db.js";
 
 const PORT = 3000;
 
 const app = express();
-app.disable('x-powered-by');
+app.disable("x-powered-by");
 
 // Serve Swagger UI
-const swaggerDocument = JSON.parse(fs.readFileSync('./swagger.json', 'utf8'));
-app.use('/docs', swaggerUi.serve, swaggerUi.setup(swaggerDocument));
+const swaggerDocument = JSON.parse(fs.readFileSync("./swagger.json", "utf8"));
+app.use("/docs", swaggerUi.serve, swaggerUi.setup(swaggerDocument));
 
-app.use(express.json())
+app.use(express.json());
 
 // const tasks = [
 //     { id: 1, title: "Read a bible", done: true },
@@ -21,39 +21,42 @@ app.use(express.json())
 // ];
 
 app.get("/", (req, res) => {
-    res.send("Hello  Server!");
+  res.send("Hello  Server!");
 });
-
 
 app.get("/", (req, res) => {
-    res.status(200).json({"name": "Task API", "version": "1.0", "endpoints": ["/tasks"]})
+  res
+    .status(200)
+    .json({ name: "Task API", version: "1.0", endpoints: ["/tasks"] });
 });
 
-
 app.get("/health", (req, res) => {
-    res.status(200).json({"status": "ok"})
+  res.status(200).json({ status: "ok" });
 });
 
 // Get all tasks
-// app.get("/tasks", (req, res) => {
-//     res.status(200).json(tasks);
-// });
-
-app.get('/tasks', async (req, res) => {
-  const tasks = await Task.findAll();
-  res.json(tasks);
+app.get("/tasks", async (req, res) => {
+  try {
+    const tasks = await Task.findAll();
+    res.json(tasks);
+  } catch {
+    res.status(500).json({ error: "Database error" });
+  }
 });
 
-// // Update a task
-// app.get("/tasks/:id", (req, res) => {
-//     const id = req.params.id;
-//     const task = tasks.find(t => t.id === Number.parseInt(id));
-//     if (!task) {
-//         res.status(404).json({"error": "Task not found"});
-//         return;
-//     }
-//     res.status(200).json(task);
-// });
+// Get task by ID
+app.get("/tasks/:id", async (req, res) => {
+  try {
+    const id = req.params.id;
+    const task = await Task.findByPk(id);
+    if (!task) {
+      return res.status(404).json({ error: "Task not found" });
+    }
+    res.json(task);
+  } catch {
+    res.status(500).json({ error: "Database error" });
+  }
+});
 
 // // Create a new task
 // app.post('/tasks', (req, res) => {
@@ -110,11 +113,9 @@ app.get('/tasks', async (req, res) => {
 
 // start the server
 app.listen(PORT, () => {
-    console.log(`Server is running on port ${PORT}`);
-    console.log(`Swagger UI available at http://localhost:${PORT}/docs`);
+  console.log(`Server is running on port ${PORT}`);
+  console.log(`Swagger UI available at http://localhost:${PORT}/docs`);
 });
-
-
 
 // import express from 'express';
 // import db from './db.mjs';
