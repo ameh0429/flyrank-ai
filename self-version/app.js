@@ -68,101 +68,52 @@ app.post('/tasks', async (req, res) => {
   try {
     const newTask = await Task.create({ title, done: false });
     res.status(201).json(newTask);
-  } catch (err) {
+  } catch {
     res.status(500).json({ error: 'Database error' });
   }
 });
 
 // //  Update a task
-// app.put('/tasks/:id', (req, res) => {
-//   const id = Number(req.params.id);
-//   const task = tasks.find(t => t.id === id);
+app.put('/tasks/:id', async (req, res) => {
+  const { title, done } = req.body;
 
-//   if (!task) {
-//     return res.status(404).json({ error: `Task ${id} not found` });
-//   }
+  // Validate input
+  if (title === undefined && done === undefined) {
+    return res.status(400).json({ error: 'Nothing to update' });
+  }
 
-//   const { title, done } = req.body;
+  try {
+    const task = await Task.findByPk(req.params.id);
+    if (!task) return res.status(404).json({ error: 'Task not found' });
 
-//   if (title === undefined && done === undefined) {
-//     return res.status(400).json({ error: 'Nothing to update' });
-//   }
+    await task.update({
+      title: title ?? task.title,
+      done: done ?? task.done,
+    });
 
-//   if (title !== undefined) task.title = title;
-//   if (done !== undefined) task.done = done;
+    res.json(task);
+  } catch {
+    res.status(500).json({ error: 'Database error' });
+  }
+});
 
-//   res.json(task);
-// });
 
-// // Delete a task
-// app.delete('/tasks/:id', (req, res) => {
-//   const id = Number(req.params.id);
-//   const index = tasks.findIndex(t => t.id === id);
+// Delete a task
+app.delete('/tasks/:id', async (req, res) => {
+  try {
+    const task = await Task.findByPk(req.params.id);
+    if (!task) return res.status(404).json({ error: 'Task not found' });
 
-//   if (index === -1) {
-//     return res.status(404).json({ error: `Task ${id} not found` });
-//   }
+    await task.destroy();
+    res.status(204).send(); // No Content
+  } catch (err) {
+    res.status(500).json({ error: 'Database error' });
+  }
+});
 
-//   tasks.splice(index, 1);
-//   res.status(204).json("Task deleted successfully");
-// });
 
 // start the server
 app.listen(PORT, () => {
   console.log(`Server is running on port ${PORT}`);
   console.log(`Swagger UI available at http://localhost:${PORT}/docs`);
 });
-
-// import express from 'express';
-// import db from './db.mjs';
-
-// const app = express();
-// const PORT = 3000;
-
-// app.use(express.json());
-
-// // GET /tasks
-// app.get('/tasks', (req, res) => {
-//   const tasks = db.prepare('SELECT * FROM tasks').all();
-//   res.json(tasks);
-// });
-
-// // GET /tasks/:id
-// app.get('/tasks/:id', (req, res) => {
-//   const task = db.prepare('SELECT * FROM tasks WHERE id = ?').get(req.params.id);
-//   if (!task) return res.status(404).json({ error: 'Task not found' });
-//   res.json(task);
-// });
-
-// // POST /tasks
-// app.post('/tasks', (req, res) => {
-//   const { title } = req.body;
-//   if (!title || title.trim() === '') {
-//     return res.status(400).json({ error: 'Title is required' });
-//   }
-//   const result = db.prepare('INSERT INTO tasks (title, done) VALUES (?, ?)').run(title, 0);
-//   const newTask = db.prepare('SELECT * FROM tasks WHERE id = ?').get(result.lastInsertRowid);
-//   res.status(201).json(newTask);
-// });
-
-// // PUT /tasks/:id
-// app.put('/tasks/:id', (req, res) => {
-//   const { title, done } = req.body;
-//   const task = db.prepare('SELECT * FROM tasks WHERE id = ?').get(req.params.id);
-//   if (!task) return res.status(404).json({ error: 'Task not found' });
-
-//   db.prepare('UPDATE tasks SET title = ?, done = ? WHERE id = ?')
-//     .run(title ?? task.title, done ?? task.done, req.params.id);
-
-//   const updated = db.prepare('SELECT * FROM tasks WHERE id = ?').get(req.params.id);
-//   res.json(updated);
-// });
-
-// // DELETE /tasks/:id
-// app.delete('/tasks/:id', (req, res) => {
-//   const result = db.prepare('DELETE FROM tasks WHERE id = ?').run(req.params.id);
-//   if (result.changes === 0) return res.status(404).json({ error: 'Task not found' });
-//   res.status(204).send();
-// });
-
-// app.listen(PORT, () => console.log(`Server running at http://localhost:${PORT}`));
