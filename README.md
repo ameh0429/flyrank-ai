@@ -62,3 +62,22 @@ Content-Length: 123
 - What did it get wrong or quietly ignore from your prompt? - The AI did not ignore anything or got anything wrong from my prompt.
 - What did your prompt forget to specify — My prompt did not forget any details. I described the complete details of the project in my prompt.
 
+## Why I Did Not Use SQLite
+I initially planned to use SQLite (via better‑sqlite3) because it’s simple, lightweight, and requires no external server. However, on my Windows 10 system, the installation failed with a native C++ compilation error.
+
+better‑sqlite3 depends on node‑gyp and Visual Studio Build Tools to compile its bindings. My setup lacked the required “Desktop development with C++” workload, and Node 22 no longer supports older Visual Studio versions. As a result, the module couldn’t build successfully — even after verifying Python and Node‑gyp versions.
+
+## Why I Chose Postgres +` Sequelize`
+To avoid native compilation issues and gain a more scalable setup, I switched to PostgreSQL with `Sequelize ORM`.
+This choice offers several advantages:
+- No native compilation — `Sequelize` uses pure JavaScript drivers (pg and pg‑hstore).
+- Cross‑platform reliability — works seamlessly on Windows without extra build tools.
+- Automatic table creation and seeding — the app initializes the database automatically on startup.
+
+The server connects to Postgres, creates the Tasks table, and seeds three example tasks — no manual setup required.
+
+## DB Screenshot
+
+![Image description](https://dev-to-uploads.s3.us-east-2.amazonaws.com/uploads/articles/3sp9buebz7468h9capla.png)
+
+
