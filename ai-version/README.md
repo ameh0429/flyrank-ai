@@ -1,17 +1,48 @@
 # Task API ai-version
 
-A simple, in-memory Task CRUD API built with **Node.js**, **Express**, and **ESM
-modules**. It lets you list, create, update, and delete tasks over a small
-REST interface, and ships with interactive **Swagger UI** documentation.
-
-Everything lives in a single file, `index.js`, for simplicity — there's no
-database, so data resets whenever the server restarts.
+A Task CRUD API built with **Node.js**, **Express**, and **ESM modules**,
+backed by **PostgreSQL** through the **Sequelize** ORM. It lets you list,
+create, update, and delete tasks over a small REST interface, and ships
+with interactive **Swagger UI** documentation.
+ 
+This replaces the earlier in-memory version: data now lives in a real
+Postgres `tasks` table and survives server restarts.
 
 ## Install & Run
 
 ```bash
 npm install && npm start
 ```
+
+## Environment variables
+ 
+Sequelize is configured entirely from environment variables in
+`src/db.js` — no credentials are hardcoded. Copy `.env.example` to `.env`
+and fill in your own values:
+ 
+```
+DB_NAME=task_api_dev
+DB_USER=postgres
+DB_PASSWORD=postgres
+DB_HOST=localhost
+DB_PORT=5432
+DB_LOGGING=false
+PORT=3000
+```
+ 
+`dotenv` loads `.env` automatically when the app starts. In production
+(e.g. a hosted Postgres add-on on Render, Railway, or Heroku), set these
+same variables in your platform's environment configuration instead of
+committing a `.env` file — `.env` should stay out of version control.
+
+### Automatic table creation
+ 
+`src/models/Task.js` defines the `Task` model, and `index.js` calls
+`await sequelize.sync()` on startup, which creates the `tasks` table
+automatically if it's missing. This is convenient for development; for a
+production deployment, consider switching to
+[Sequelize migrations](https://sequelize.org/docs/v6/other-topics/migrations/)
+so schema changes are tracked and reversible instead of relying on `sync()`.
 
 The server starts on **http://localhost:3001**, and the interactive API
 docs are served at **http://localhost:3001/docs**.
@@ -66,8 +97,13 @@ delete tasks entirely from the docs page.
 
 ```
 task-api/
-├── index.js        # Express server, routes, and in-memory data (ESM)
-├── openapi.json     # OpenAPI 3.0 spec powering Swagger UI at /docs
+├── index.js              # Express app, routes, server startup
+├── src/
+│   ├── db.js              # Sequelize connection (reads env vars)
+│   └── models/
+│       └── Task.js        # Sequelize Task model
+├── openapi.json           # OpenAPI 3.0 spec powering Swagger UI at /docs
+├── .env.example            # Template for DB credentials
 ├── package.json
 └── README.md
 ```

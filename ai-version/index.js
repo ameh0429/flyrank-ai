@@ -3,26 +3,18 @@ import fs from "node:fs";
 import path from "node:path";
 import { fileURLToPath } from "node:url";
 import swaggerUi from "swagger-ui-express";
+import { sequelize } from "./db.js";
+import { Task } from "./models/Task.js";
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
 
 const app = express();
+
 const PORT = 3001;
 
 app.use(express.json());
 
-// In-memory data
-let tasks = [
-  { id: 1, title: "Buy milk", done: false },
-  { id: 2, title: "Write report", done: true },
-  { id: 3, title: "Walk the dog", done: false },
-];
-
-// Tracks the next id to assign, independent of array length so ids stay
-// unique even after deletions.
-let nextId = tasks.length + 1;
-
-// Stage 1 - Root and health endpoints
+// Root and health endpoints
 app.get("/", (req, res) => {
   res.status(200).json({
     name: "Task API",
@@ -36,79 +28,98 @@ app.get("/health", (req, res) => {
 });
 
 // Read endpoints
-app.get("/tasks", (req, res) => {
-  res.status(200).json(tasks);
+app.get("/tasks", async (req, res, next) => {
+  try {
+    const tasks = await Task.findAll({ order: [["id", "ASC"]] });
+    res.status(200).json(tasks);
+  } catch (err) {
+    next(err);
+  }
 });
 
-app.get("/tasks/:id", (req, res) => {
-  const id = Number(req.params.id);
-  const task = tasks.find((t) => t.id === id);
-
-  if (!task) {
-    return res.status(404).json({ error: "Task not found" });
+app.get("/tasks/:id", async (req, res, next) => {
+  try {
+    const id = Number(req.params.id);
+    const task = await Task.findByPk(id);
+    if (!task) {
+      return res.status(404).json({ error: "Task not found" });
+    }
+    res.status(200).json(task);
+  } catch (err) {
+    next(err);
   }
-
-  res.status(200).json(task);
 });
 
 // Stage 3 - Create endpoint
-app.post("/tasks", (req, res) => {
-  const { title } = req.body ?? {};
-
-  if (typeof title !== "string" || title.trim() === "") {
-    return res.status(400).json({ error: "Title is required" });
+app.post("/tasks", async (req, res, next) => {
+  try {
+    const { title } = req.body ?? {};
+ 
+    if (typeof title !== "string" || title.trim() === "") {
+      return res.status(400).json({ error: "Title is required" });
+    }
+ 
+    const task = await Task.create({ title: title.trim(), done: false });
+    res.status(201).json(task);
+  } catch (err) {
+    next(err);
   }
-
-  const task = { id: nextId++, title: title.trim(), done: false };
-  tasks.push(task);
-
-  res.status(201).json(task);
 });
 
 // Update & delete endpoints
-app.put("/tasks/:id", (req, res) => {
-  const id = Number(req.params.id);
-  const task = tasks.find((t) => t.id === id);
-
-  if (!task) {
-    return res.status(404).json({ error: "Task not found" });
+app.put("/tasks/:id", async (req, res, next) => {
+  try {
+    const task = await Task.findByPk(req.params.id);
+ 
+    if (!task) {
+      return res.status(404).json({ error: "Task not found" });
+    }
+ 
+    const { title, done } = req.body ?? {};
+    const hasTitle = title !== undefined;
+    const hasDone = done !== undefined;
+ 
+    if (!hasTitle && !hasDone) {
+      return res
+        .status(400)
+        .json({ error: "Provide at least one of: title, done" });
+    }
+ 
+    if (hasTitle && (typeof title !== "string" || title.trim() === "")) {
+      return res
+        .status(400)
+        .json({ error: "Title must be a non-empty string" });
+    }
+ 
+    if (hasDone && typeof done !== "boolean") {
+      return res.status(400).json({ error: "Done must be a boolean" });
+    }
+ 
+    await task.update({
+      ...(hasTitle && { title: title.trim() }),
+      ...(hasDone && { done }),
+    });
+ 
+    res.status(200).json(task);
+  } catch (err) {
+    next(err);
   }
-
-  const { title, done } = req.body ?? {};
-
-  const hasTitle = title !== undefined;
-  const hasDone = done !== undefined;
-
-  if (!hasTitle && !hasDone) {
-    return res
-      .status(400)
-      .json({ error: "Provide at least one of: title, done" });
-  }
-
-  if (hasTitle && (typeof title !== "string" || title.trim() === "")) {
-    return res.status(400).json({ error: "Title must be a non-empty string" });
-  }
-
-  if (hasDone && typeof done !== "boolean") {
-    return res.status(400).json({ error: "Done must be a boolean" });
-  }
-
-  if (hasTitle) task.title = title.trim();
-  if (hasDone) task.done = done;
-
-  res.status(200).json(task);
 });
 
-app.delete("/tasks/:id", (req, res) => {
-  const id = Number(req.params.id);
-  const index = tasks.findIndex((t) => t.id === id);
-
-  if (index === -1) {
-    return res.status(404).json({ error: "Task not found" });
+app.delete("/tasks/:id", async (req, res, next) => {
+  try {
+    const deletedCount = await Task.destroy({
+      where: { id: req.params.id },
+    });
+ 
+    if (deletedCount === 0) {
+      return res.status(404).json({ error: "Task not found" });
+    }
+ 
+    res.status(204).send();
+  } catch (err) {
+    next(err);
   }
-
-  tasks.splice(index, 1);
-  res.status(204).send();
 });
 
 // Swagger UI docs at /docs
@@ -123,7 +134,29 @@ app.use((req, res) => {
 });
 
 // Start server
-app.listen(PORT, () => {
-  console.log(`Task API listening on http://localhost:${PORT}`);
-  console.log(`Swagger docs at http://localhost:${PORT}/docs`);
-});
+// app.listen(PORT, () => {
+//   console.log(`Task API listening on http://localhost:${PORT}`);
+//   console.log(`Swagger docs at http://localhost:${PORT}/docs`);
+// });
+
+async function start() {
+  try {
+    await sequelize.authenticate();
+    console.log("Connected to PostgreSQL.");
+ 
+    // Creates the `tasks` table automatically if it doesn't exist yet.
+    // For production, prefer migrations over sync({ alter: true }).
+    await sequelize.sync();
+    console.log("Models synced.");
+ 
+    app.listen(PORT, () => {
+      console.log(`Task API listening on http://localhost:${PORT}`);
+      console.log(`Swagger docs at http://localhost:${PORT}/docs`);
+    });
+  } catch (err) {
+    console.error("Unable to start the server:", err);
+    process.exit(1);
+  }
+}
+ 
+start();
