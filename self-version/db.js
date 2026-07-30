@@ -2,22 +2,13 @@ import { Sequelize, DataTypes } from 'sequelize';
 import dotenv from 'dotenv';
 dotenv.config();
 
-// Connect to your Postgres database
-// const sequelize = new Sequelize('taskdb', 'postgres', 'amehmathias049', {
-//   host: 'localhost',
-//   dialect: 'postgres',
-// });
+const sequelize = new Sequelize(process.env.DATABASE_URL, {
+  dialect: 'postgres',
+  logging: false,
+});
 
-const sequelize = new Sequelize({
-    dialect: 'postgres',
-    host: process.env.DB_HOST || 'localhost',
-    port: Number.parseInt(process.env.DB_PORT, 10) || 5432,
-    database: process.env.DB_NAME || 'taskdb',
-    username: process.env.DB_USER || 'postgres',
-    password: process.env.DB_PASSWORD || '',
-    logging: false,
-    pool: { max: 5, min: 0, acquire: 30000, idle: 10000 },
-  });
+console.log('Connecting with:', process.env.DATABASE_URL);
+
 
 // Define the Task model
 const Task = sequelize.define('Task', {
