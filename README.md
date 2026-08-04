@@ -1,6 +1,7 @@
 # Task API. Self-Version
 
-A simple **Node.js + Express (ESM)** CRUD API for managing tasks, complete with **Swagger UI** documentation.
+A simple task‑tracking API powered by **Node.js**, **Express**, and **PostgreSQL**, containerized with **Docker Compose**.
+Run the entire stack with one command — no manual setup required.
 
 ---
 
@@ -56,6 +57,37 @@ Content-Length: 123
 - In-memory task list (no database).
 - Fully documented with OpenAPI 3.0 spec served via swagger-ui-express.
 
+## Docker Implementation
+### QuickStart
+
+```
+docker compose up
+
+```
+This command builds and starts both the API and Postgres services.
+
+### Environment Variables
+Copy `.env.example` to .env` `and set:
+
+```
+DATABASE_URL=postgres://postgres:dev@db:5432/tasks
+PORT=3000
+```
+
+### Database Verification
+After running `docker compose up`, connect to Postgres:
+
+```
+docker exec -it self-version-db-1 psql -U postgres -d tasks
+
+```
+Then check your data:
+
+```
+\dt
+SELECT * FROM "Tasks";
+```
+   
 ## Comparing AI Code with My Code
 
 - What did the AI do better — and do you understand its version well enough to explain it? The AI generated the code with better error handling with a detailed documentation. 
