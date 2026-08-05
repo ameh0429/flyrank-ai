@@ -1,9 +1,15 @@
 import express from "express";
 import swaggerUi from "swagger-ui-express";
+import { createClient } from '@supabase/supabase-js';
 import fs from "node:fs";
+import dotenv from 'dotenv';
 import { Task } from "./db.js";
 
+dotenv.config();
+
 const PORT = 3000;
+
+const supabase = createClient(process.env.SUPABASE_URL, process.env.SUPABASE_KEY);
 
 const app = express();
 app.disable("x-powered-by");
@@ -114,6 +120,6 @@ app.delete('/tasks/:id', async (req, res) => {
 
 // start the server
 app.listen(PORT, () => {
-  console.log(`Server is running on port ${PORT}`);
+  console.log(`Server is running on port ${PORT} and connected to superbase`);
   console.log(`Swagger UI available at http://localhost:${PORT}/docs`);
 });

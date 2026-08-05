@@ -4,6 +4,7 @@ dotenv.config();
 
 const sequelize = new Sequelize(process.env.DATABASE_URL, {
   dialect: 'postgres',
+  retry: { max: 10 },
   logging: false,
 });
 
