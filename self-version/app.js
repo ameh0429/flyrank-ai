@@ -72,6 +72,30 @@ app.post('/auth/login', async (req, res) => {
   res.status(200).json({mesage: 'Login successful', access_token: data.session.access_token, refresh_token: data.session.refresh_token})
 })
 
+// Public route
+app.get('/public/info', (req, res) => {
+  res.status(200).json({ 'message': 'Welcome stranger! This info is public' });
+});
+
+// Protcted route
+app.get('/protected/profile', (req, res) => {
+  const authHeader = req.headers.authorization;
+
+  // Check if header exists and starts with "Bearer "
+  if (!authHeader || !authHeader.startsWith('Bearer ')) {
+    return res.status(401).json({ error: 'Access token required' });
+  }
+
+  // Extract token (not verifying yet)
+  const token = authHeader.split(' ')[1];
+  if (!token) {
+    return res.status(401).json({ error: 'Access token required' });
+  }
+
+  // For now, just confirm token presence
+  res.status(200).json({ message: 'Token received, but not yet verified.' });
+});
+
 // Get all tasks
 app.get("/tasks", async (req, res) => {
   try {
