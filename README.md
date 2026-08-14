@@ -26,11 +26,31 @@ http://localhost:3000/docs
 ## Endpoints Table
 | Method | Endpoint | Description | Status Codes |
 | --- | --- | --- | --- |
+| POST | ``/auth/signup`` | Register a new user | 200 |
+| POST | ``/auth/login`` | Authenticate user and return tokens | 200 |
+| POST | ``/auth/logout`` | End user session | 200 |
 | GET | ``/tasks`` | List all tasks | 200 |
 | GET | ``/tasks/{id}`` | Get a single task by ID | 200, 404 |
 | POST | ``/tasks`` | Create a new task | 201, 400 |
 | PUT | ``/tasks/{id}`` | Update a task | 200, 400, 404 |
 | DELETE | ``/tasks/{id}`` | Delete a task | 204, 404 |
+
+
+## API Reference Table
+| Endpoint | Method | Description | Auth Required |
+| --- | --- | --- | --- |
+| `/auth/signup` | POST | Register a new user | ❌
+| `/auth/login` | POST | Authenticate user and return tokens | ❌
+| `/auth/logout` | POST | End user session | ✅
+| `/protected/profile` | GET | Get authenticated user profile | ✅
+| `/tasks` | GET | List all tasks | ❌
+| `/tasks` | POST | Create a new task | ❌
+| `/tasks/{id}` | GET | Get a single task | ❌
+| `/tasks/{id}` | PUT | Update a task | ❌
+| `/tasks/{id}` | DELETE | Delete a task | ❌
+
+✅ = Requires Bearer token in Authorization header
+❌ = Public endpoint
 
 ## Example curl -i Output
 ```bash
