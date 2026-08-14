@@ -1,15 +1,17 @@
 import express from "express";
 import swaggerUi from "swagger-ui-express";
+import supabase from './supabaseClient.js';
 import { createClient } from '@supabase/supabase-js';
 import fs from "node:fs";
 import dotenv from 'dotenv';
 import { Task } from "./db.js";
+import { authGuard } from "./authMiddleware.js";
 
 dotenv.config();
 
 const PORT = 3000;
 
-const supabase = createClient(process.env.SUPABASE_URL, process.env.SUPABASE_KEY);
+// const supabase = createClient(process.env.SUPABASE_URL, process.env.SUPABASE_KEY);
 
 const app = express();
 app.disable("x-powered-by");
@@ -97,31 +99,27 @@ app.get('/public/info', (req, res) => {
 // });
 
 
-app.get('/protected/profile', async (req, res) => {
-  const authHeader = req.headers.authorization;
+app.get('/protected/profile', authGuard, (req, res) => {
 
-  // Check if header exists and starts with "Bearer "
-  if (!authHeader || !authHeader.startsWith('Bearer ')) {
-    return res.status(401).json({ error: 'Access token required' });
-  }
-
-  const token = authHeader.split(' ')[1];
-
-  // Ask Supabase to verify the token
-  const { data, error } = await supabase.auth.getUser(token);
-
-  if (error || !data.user) {
-    return res.status(401).json({ error: 'Invalid or expired token' });
-  }
-
-  // Token verified — return safe user metadata
-  const user = data.user;
+  const user = req.user;
   res.status(200).json({
     id: user.id,
     email: user.email,
     created_at: user.created_at,
   });
 });
+
+// Logout
+app.post('/auth/logout', authGuard, async (req, res) => {
+  const { error } = await supabase.auth.signOut();
+
+  if (error) {
+    return res.status(500).json({ error: error.message });
+  }
+
+  res.status(204).send(); // No Content
+});
+
 
 
 // Get all tasks
